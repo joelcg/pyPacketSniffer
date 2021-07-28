@@ -1,7 +1,9 @@
 from scapy.all import *
 import socket, datetime, os, time
+import PySimpleGUI as sg
 
-def main(packet):
+def capture(packet):
+    #time.sleep(2)
     clock = datetime.datetime.now()
     if packet.haslayer(TCP):
         if socket.gethostbyname(socket.gethostname()) == packet[IP].dst:
@@ -20,7 +22,7 @@ def main(packet):
                 print("Application Layer Protocol: " + port_proto(int(packet.dport)))
             print("\n")
             
-    elif packet.haslayer(UDP):
+    if packet.haslayer(UDP):
         if socket.gethostbyname(socket.gethostname()) == packet[IP].dst:
             print("[" + str(clock) + "]")
             print("Transport Layer Protocol: UDP")
@@ -32,9 +34,11 @@ def main(packet):
             print("Destination IP: " + str(packet[IP].dst))
             print("Destination Port: " + str(packet.dport))
             if packet.sport != None:
-                print("Application Layer Protocol: " + port_proto(int(packet.dport)))
+                print("Application Layer Protocol: " + 
+                      port_proto(int(packet.dport)))
             elif packet.dport != None:
-                print("Application Layer Protocol: " + port_proto(int(packet.sport)))
+                print("Application Layer Protocol: " + 
+                      port_proto(int(packet.sport)))
             print("\n")
         
     if packet.haslayer(ICMP):
@@ -54,13 +58,15 @@ def main(packet):
         print("Network Layer Protocol: ARP")
         print(str(len(packet[ARP])) + " bytes in.")
         if packet[ARP].op == 1:
-            print("Request: " + str(packet[ARP].psrc) + " is asking about " + str(packet[ARP].pdst))
+            print("Request: " + str(packet[ARP].psrc) + " is asking about " + 
+                  str(packet[ARP].pdst))
         elif packet[ARP].op == 2:
-            print("Response: " + str(packet[ARP].hwsrc) + " has address " + str(packet[ARP].psrc))
+            print("Response: " + str(packet[ARP].hwsrc) + " has address " + 
+                  str(packet[ARP].psrc))
         print("\n")
     
-    # else: 
-    #     print("Unrecognized segment or packet recorded. \n")
+    else: 
+        return "Unrecognized segment or packet recorded. \n"
 
 def port_proto(port):
     # HANYA BEBERAPA PROTOKOL
@@ -98,6 +104,28 @@ def port_proto(port):
         return "Hypertext Transfer Protocol Secure (HTTPS)"
     else:
         return str(port)
-            
+
+def main():
+    layout = [
+        [sg.Text('Welcome To pyPacketSniffer', 
+                 font=("Helvetica", 14))],
+        [sg.Button('Start Sniffing!')],
+        [sg.Button('Quit!')]
+    ]
+    sg.theme('Black')
+    win = sg.Window('pyPacketSniffer', layout)
+    
+    while True:
+        event, value = win.read(timeout=100)
+        if (event == sg.WIN_CLOSED or
+            event == 'Quit!'):
+            win.close()
+            break
+        elif event == 'Start Sniffing!':
+            sg.Print('Re-routing the stdout', do_not_reroute_stdout=False)
+            print = sg.Print
+            sniff(prn=capture)
+    win.close()  
+    
 if __name__ == '__main__':
-	sniff(prn=main)
+    main()
