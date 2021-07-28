@@ -1,5 +1,5 @@
 from scapy.all import *
-import socket, datetime, os, time
+import socket, datetime, time
 import PySimpleGUI as sg
 
 def capture(packet):
@@ -17,9 +17,11 @@ def capture(packet):
             print("Destination IP: " + str(packet[IP].dst))
             print("Destination Port: " + str(packet.dport))
             if packet.sport != None:
-                print("Application Layer Protocol: " + port_proto(int(packet.sport)))
+                print("Application Layer Protocol: " +
+                      port_proto(int(packet.sport)))
             elif packet.dport != None:
-                print("Application Layer Protocol: " + port_proto(int(packet.dport)))
+                print("Application Layer Protocol: " +
+                      port_proto(int(packet.dport)))
             print("\n")
             
     if packet.haslayer(UDP):
@@ -83,9 +85,11 @@ def port_proto(port):
     elif port == 53:
         return "Domain Name System(DNS) Protocol"
     elif port == 67:
-        return "Bootstrap Protocol (BOOTP) - Server / Dynamic Host Configuration Protocol (DHCP)"
+        return "Bootstrap Protocol (BOOTP) - Server / ", \
+            "Dynamic Host Configuration Protocol (DHCP)"
     elif port == 68:
-        return "Bootstrap Protocol (BOOTP) - Client / Dynamic Host Configuration Protocol (DHCP)"
+        return "Bootstrap Protocol (BOOTP) - Client / ", \
+            "Dynamic Host Configuration Protocol (DHCP)"
     elif port == 80:
         return "Hypertext Transfer Protocol (HTTP)"
     elif port == 115:
