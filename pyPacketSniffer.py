@@ -1,9 +1,8 @@
 from scapy.all import *
-import socket, datetime, time
+import socket, datetime, time, threading
 import PySimpleGUI as sg
 
 def capture(packet):
-    #time.sleep(2)
     clock = datetime.datetime.now()
     if packet.haslayer(TCP):
         if socket.gethostbyname(socket.gethostname()) == packet[IP].dst:
@@ -66,7 +65,7 @@ def capture(packet):
             print("Response: " + str(packet[ARP].hwsrc) + " has address " + 
                   str(packet[ARP].psrc))
         print("\n")
-    
+        
     else: 
         return "Unrecognized segment or packet recorded. \n"
 
@@ -110,13 +109,17 @@ def port_proto(port):
         return str(port)
 
 def main():
+    menu_def = [['&Help', [ 'About']]]
     layout = [
         [sg.Text('Welcome To pyPacketSniffer', 
                  font=("Helvetica", 14))],
+        [sg.Menu(menu_def)],
+        [sg.Text('Stop Sniffing after (sec)', size =(20, 1)), 
+         sg.Input(key='timeout')],
         [sg.Button('Start Sniffing!')],
         [sg.Button('Quit!')]
     ]
-    sg.theme('Black')
+    sg.theme('Dark Blue 3')
     win = sg.Window('pyPacketSniffer', layout)
     
     while True:
@@ -125,10 +128,34 @@ def main():
             event == 'Quit!'):
             win.close()
             break
+        
         elif event == 'Start Sniffing!':
             sg.Print('Re-routing the stdout', do_not_reroute_stdout=False)
             print = sg.Print
-            sniff(prn=capture)
+            sniff(prn=capture, timeout=int(value['timeout']))
+
+        elif event == 'About':
+            layout = [
+                [sg.Text('About', 
+                         font=("Helvetica", 14))],
+                [sg.Text("A simple and purely python-based network and ",
+                         font=("Helvetica", 11))],
+                [sg.Text("transport layer packet sniffing tool with a ",
+                         font=("Helvetica", 11))],
+                [sg.Text("simple GUI and an easy to read data by ", 
+                         font=("Helvetica", 11))],
+                [sg.Text("design.", font=("Helvetica", 11))],
+                [sg.Button('Back!')]
+            ]
+            sg.theme('Dark Blue 3')
+            win2 = sg.Window('pyPacketSniffer', layout)
+            while True:
+                event2, value2 = win2.read(timeout=100)
+                if (event2 == sg.WIN_CLOSED or
+                    event2 == 'Back!'):
+                    win2.close()
+                    break
+                
     win.close()  
     
 if __name__ == '__main__':
